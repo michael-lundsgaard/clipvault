@@ -1,0 +1,23 @@
+# Ignore all node_modules directory
+node_modules/
+
+# Ignore build output
+dist/
+build/
+
+# Ignore log files
+*.log
+
+# Ignore configuration files
+*.config.js
+
+# Ignore coverage directory
+coverage/
+
+# Ignore any temporary files
+*.tmp
+*.temp
+
+# Ignore any IDE specific files
+.vscode/
+.idea/
