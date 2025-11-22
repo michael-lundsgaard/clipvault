@@ -1,29 +1,29 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
 
 export const metadata: Metadata = {
-  title: 'ClipVault',
-  description: '',
+	title: 'ClipVault',
+	description: '',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
-    </html>
-  );
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+	return (
+		<html lang="en">
+			<body className="min-h-screen bg-gray-50 text-gray-900">
+				<header className="border-b bg-white shadow-sm">
+					<div className="max-w-5xl mx-auto p-4 flex items-center justify-between">
+						<h1 className="text-lg font-semibold">ClipVault</h1>
+						<nav className="space-x-4">
+							<a href="/" className="text-sm">
+								Gallery
+							</a>
+							<a href="/upload" className="text-sm">
+								Upload
+							</a>
+						</nav>
+					</div>
+				</header>
+				<main className="py-8">{children}</main>
+			</body>
+		</html>
+	);
 }
