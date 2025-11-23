@@ -1,0 +1,22 @@
+@import 'tailwindcss';
+
+/* Tailwind base layers */
+@tailwind utilities;
+
+/* small global tweaks for minimal look */
+:root {
+	--surface: #ffffff;
+	--muted: #6b7280;
+	--accent: #4f46e5;
+}
+html,
+body,
+#__next {
+	height: 100%;
+}
+body {
+	@apply bg-gray-50 text-gray-900 antialiased;
+	background-color: var(--bg, #f9fafb);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}

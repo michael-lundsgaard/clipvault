@@ -1,11 +1,15 @@
-module.exports = {
-  purge: ['./src/**/*.{html,js}'],
-  darkMode: false, // or 'media' or 'class'
-  theme: {
-    extend: {},
-  },
-  variants: {
-    extend: {},
-  },
-  plugins: [],
+const config = {
+	content: [
+		'./src/app/**/*.{js,ts,jsx,tsx,mdx}',
+		'./src/components/**/*.{js,ts,jsx,tsx,mdx}',
+		'./src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+		'./src/providers/**/*.{js,ts,jsx,tsx}',
+		'./src/hooks/**/*.{js,ts,jsx,tsx}',
+	],
+	theme: {
+		extend: {},
+	},
+	plugins: [],
 };
+
+export default config;
