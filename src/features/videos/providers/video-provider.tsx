@@ -1,6 +1,10 @@
 'use client';
 
+import { Video } from '@/entities/video/model/video.db';
+// import { Video } from '@/entities/video/modal/video.db';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
+import { createVideoInitAction, listVideosAction } from '../model/videos.actions';
+// import { createVideoInitAction, listVideosAction } from '../models/videos.actions';
 
 export type UploadStatus = 'pending' | 'uploading' | 'completed' | 'error';
 
@@ -13,25 +17,12 @@ export interface UploadItem {
 	videoId?: string;
 }
 
-export interface VideoMeta {
-	id: string;
-	originalFilename: string;
-	storedFilename: string;
-	sizeBytes: number;
-	durationSeconds?: number;
-	uploadedBy?: string;
-	category?: string | null;
-	createdAt?: string | null;
-}
-
 interface VideoContextType {
-	// Videos
-	videos: VideoMeta[];
+	videos: Video[];
 	videosLoading: boolean;
 	videosError: string | null;
 	refreshVideos: () => void;
 
-	// Uploads
 	uploads: UploadItem[];
 	addFiles: (files: FileList) => void;
 	startUpload: (id: string, metadata?: { uploadedBy?: string; category?: string }) => void;
@@ -43,13 +34,10 @@ const VideoContext = createContext<VideoContextType | null>(null);
 
 export function useVideo() {
 	const context = useContext(VideoContext);
-	if (!context) {
-		throw new Error('useVideo must be used within VideoProvider');
-	}
+	if (!context) throw new Error('useVideo must be used within VideoProvider');
 	return context;
 }
 
-/** Minimal PUT with progress via XHR */
 function putFileWithProgress(url: string, file: File, onProgress?: (p: number) => void) {
 	return new Promise<{ ok: boolean; status: number }>((resolve, reject) => {
 		const xhr = new XMLHttpRequest();
@@ -75,23 +63,17 @@ interface VideoProviderProps {
 }
 
 export function VideoProvider({ children }: VideoProviderProps) {
-	// Videos state
-	const [videos, setVideos] = useState<VideoMeta[]>([]);
+	const [videos, setVideos] = useState<Video[]>([]);
 	const [videosLoading, setVideosLoading] = useState(true);
 	const [videosError, setVideosError] = useState<string | null>(null);
-
-	// Upload state
 	const [uploads, setUploads] = useState<UploadItem[]>([]);
 
-	// Fetch videos
 	const fetchVideos = useCallback(async () => {
 		try {
 			setVideosLoading(true);
 			setVideosError(null);
-			const res = await fetch('/api/videos/list');
-			if (!res.ok) throw new Error(`Failed to fetch videos: ${res.status}`);
-			const data = await res.json();
-			setVideos(data || []);
+			const data = await listVideosAction();
+			setVideos(data);
 		} catch (err) {
 			setVideosError(err instanceof Error ? err.message : 'Unknown error');
 		} finally {
@@ -103,12 +85,10 @@ export function VideoProvider({ children }: VideoProviderProps) {
 		fetchVideos();
 	}, [fetchVideos]);
 
-	// Load videos on mount
 	useEffect(() => {
 		fetchVideos();
 	}, [fetchVideos]);
 
-	// Upload functions
 	const addFiles = useCallback((files: FileList) => {
 		const items: UploadItem[] = Array.from(files)
 			.filter((f) => f.type === 'video/mp4')
@@ -131,44 +111,26 @@ export function VideoProvider({ children }: VideoProviderProps) {
 			}
 
 			try {
-				// Step 1: init on server
-				const initRes = await fetch('/api/videos/upload', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({
-						filename: item.file.name,
-						sizeBytes: item.file.size,
-						uploadedBy: metadata.uploadedBy ?? 'anonymous',
-						category: metadata.category ?? null,
-						durationSeconds: 0,
-					}),
+				const initRes = await createVideoInitAction({
+					filename: item.file.name,
+					sizeBytes: item.file.size,
+					uploadedBy: metadata.uploadedBy ?? 'anonymous',
+					category: metadata.category,
 				});
 
-				if (!initRes.ok) throw new Error(`Init failed: ${initRes.status}`);
-				const { id: videoId, uploadUrl: rawUploadUrl } = await initRes.json();
-
-				const uploadUrl =
-					typeof rawUploadUrl === 'string'
-						? rawUploadUrl
-						: Array.isArray(rawUploadUrl) && rawUploadUrl.length > 0
-						? rawUploadUrl[0].url ?? rawUploadUrl[0]
-						: rawUploadUrl?.url ?? String(rawUploadUrl);
-
+				const uploadUrl = initRes.uploadUrl;
 				if (!uploadUrl) throw new Error('No upload URL returned');
 
-				// Step 2: upload with progress
 				const result = await putFileWithProgress(uploadUrl, item.file, (p) =>
 					setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, progress: Math.round(p) } : u)))
 				);
 
 				if (!result.ok) throw new Error(`Upload failed: ${result.status}`);
 
-				// Mark completed and refresh video list
 				setUploads((prev) =>
-					prev.map((u) => (u.id === id ? { ...u, status: 'completed', progress: 100, videoId } : u))
+					prev.map((u) => (u.id === id ? { ...u, status: 'completed', progress: 100, videoId: initRes.id } : u))
 				);
 
-				// Refresh video list after successful upload
 				refreshVideos();
 			} catch (err) {
 				const message = err instanceof Error ? err.message : 'Unknown error';

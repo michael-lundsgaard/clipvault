@@ -1,4 +1,3 @@
-// db/index.ts
 import { createClient } from '@libsql/client';
 import { drizzle } from 'drizzle-orm/libsql';
 import * as schema from './schema'; // Import all your schema files
@@ -9,3 +8,4 @@ const client = createClient({
 });
 
 export const db = drizzle(client, { schema });
+export * from './schema';

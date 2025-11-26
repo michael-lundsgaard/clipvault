@@ -1,14 +1,10 @@
 'use client';
 
+import type { Video } from '@/entities/video/model/video.db';
 import { memo } from 'react';
 
 interface VideoPlayerProps {
-	video: {
-		originalFilename: string;
-		sizeBytes: number;
-		uploadedBy?: string | null;
-		category?: string | null;
-	};
+	video: Video;
 	url: string;
 }
 
@@ -20,6 +16,7 @@ function VideoPlayer({ video, url }: VideoPlayerProps) {
 					<h1 className="text-xl font-semibold">{video.originalFilename}</h1>
 					<div className="mt-2 flex items-center gap-3 text-sm text-gray-500">
 						<div>Size: {(video.sizeBytes / 1024 / 1024).toFixed(2)} MB</div>
+						{video.durationSeconds > 0 && <div>Duration: {Math.round(video.durationSeconds)}s</div>}
 						{video.category && (
 							<div className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-xs">{video.category}</div>
 						)}
