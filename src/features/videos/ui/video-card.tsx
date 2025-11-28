@@ -1,6 +1,6 @@
 'use client';
 
-import { Video } from '@/entities/video/model/video.db';
+import { VideoWithRelations } from '@/entities/video/model/video.types';
 import Link from 'next/link';
 
 function formatDuration(s?: number) {
@@ -10,7 +10,7 @@ function formatDuration(s?: number) {
 	return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-export default function VideoCard({ video }: { video: Video }) {
+export default function VideoCard({ video }: { video: VideoWithRelations }) {
 	return (
 		<article className="group rounded-md overflow-hidden bg-white shadow-sm hover:shadow-md transition">
 			<Link href={`/video/${video.id}`} className="block">
@@ -46,16 +46,14 @@ export default function VideoCard({ video }: { video: Video }) {
 						<div className="flex items-center gap-2">
 							<span>{(video.sizeBytes / 1024 / 1024).toFixed(2)} MB</span>
 							<span>•</span>
-							<span className="truncate max-w-32">{video.uploadedBy ?? 'unknown'}</span>
+							<span className="truncate max-w-32">{video.uploader?.displayName ?? 'Anonymous'}</span>
 						</div>
 
-						{/* category or badge */}
+						{/* category */}
 						<div>
-							{video.category ? (
-								<span className="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">{video.category}</span>
-							) : (
-								<span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">uncategorized</span>
-							)}
+							<span className="ml-1 text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">
+								{video.category?.name ?? 'Uncategorized'}
+							</span>
 						</div>
 					</div>
 				</div>

@@ -1,16 +1,49 @@
 'use client';
 
-import { ChangeEvent, useMemo, useRef } from 'react';
+import { useCategories } from '@/features/categories/model/use-categories';
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useVideo } from '../providers/video-provider';
 
 export function UploadPanel() {
 	const { uploads, addFiles, uploadAll, removeUpload } = useVideo();
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+	const { categories } = useCategories();
+
+	const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(undefined);
+	const [categorySearch, setCategorySearch] = useState('');
+	const [categoryOpen, setCategoryOpen] = useState(false);
+	const categoryWrapperRef = useRef<HTMLDivElement | null>(null);
+
+	// close dropdown when clicking outside
+	useEffect(() => {
+		function onClickOutside(e: MouseEvent) {
+			if (!categoryWrapperRef.current) return;
+			if (!categoryWrapperRef.current.contains(e.target as Node)) {
+				setCategoryOpen(false);
+			}
+		}
+		if (categoryOpen) {
+			document.addEventListener('mousedown', onClickOutside);
+		}
+		return () => {
+			document.removeEventListener('mousedown', onClickOutside);
+		};
+	}, [categoryOpen]);
+
+	const filteredCategories = useMemo(() => {
+		const q = categorySearch.toLowerCase().trim();
+		if (!q) return categories;
+		return categories.filter((c) => c.name.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q));
+	}, [categories, categorySearch]);
+
+	const selectedCategory = useMemo(
+		() => categories.find((c) => c.id === selectedCategoryId),
+		[categories, selectedCategoryId]
+	);
+
 	const onFileChange = (e: ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files) addFiles(e.target.files);
-
-		// reset input reference so selecting the same file again triggers onChange
 		if (fileInputRef.current) fileInputRef.current.value = '';
 	};
 
@@ -60,12 +93,93 @@ export function UploadPanel() {
 						className="ml-2 px-3 py-1 rounded bg-blue-600 text-white text-sm"
 						onClick={(e) => {
 							e.stopPropagation();
-							uploadAll();
+							uploadAll({ categoryId: selectedCategoryId });
 						}}
 					>
 						Upload all
 					</button>
 				</div>
+			</div>
+
+			{/* category selector (searchable dropdown) */}
+			<div className="flex items-start gap-3">
+				<label className="mt-2 text-sm text-gray-600 shrink-0">Category</label>
+
+				<div ref={categoryWrapperRef} className="relative flex-1">
+					<button
+						type="button"
+						onClick={() => setCategoryOpen((o) => !o)}
+						className="w-full flex items-center justify-between border rounded-md px-3 py-2 text-sm bg-white"
+					>
+						<span className={selectedCategory ? '' : 'text-gray-400'}>
+							{selectedCategory ? selectedCategory.name : 'Uncategorized'}
+						</span>
+						<svg
+							className={`w-4 h-4 text-gray-500 transition-transform ${categoryOpen ? 'rotate-180' : ''}`}
+							viewBox="0 0 20 20"
+							fill="none"
+							stroke="currentColor"
+						>
+							<path d="M6 8l4 4 4-4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+						</svg>
+					</button>
+
+					{categoryOpen && (
+						<div className="absolute z-20 mt-1 w-full bg-white border rounded-md shadow-lg max-h-64 overflow-y-auto">
+							<div className="p-2 border-b">
+								<input
+									type="text"
+									autoFocus
+									className="w-full border rounded px-2 py-1 text-sm"
+									placeholder="Search games..."
+									value={categorySearch}
+									onChange={(e) => setCategorySearch(e.target.value)}
+								/>
+							</div>
+
+							<ul className="text-sm">
+								<li>
+									<button
+										type="button"
+										className={`w-full text-left px-3 py-2 hover:bg-gray-50 ${
+											!selectedCategoryId ? 'bg-gray-50 font-medium' : ''
+										}`}
+										onClick={() => {
+											setSelectedCategoryId(undefined);
+											setCategoryOpen(false);
+										}}
+									>
+										Uncategorized
+									</button>
+								</li>
+
+								{filteredCategories.length === 0 ? (
+									<li className="px-3 py-2 text-xs text-gray-500">No matches</li>
+								) : (
+									filteredCategories.map((c) => (
+										<li key={c.id}>
+											<button
+												type="button"
+												className={`w-full text-left px-3 py-2 hover:bg-gray-50 ${
+													selectedCategoryId === c.id ? 'bg-indigo-50 font-medium' : ''
+												}`}
+												onClick={() => {
+													setSelectedCategoryId(c.id);
+													setCategoryOpen(false);
+												}}
+											>
+												<div>{c.name}</div>
+												<div className="text-[11px] text-gray-500">{c.slug}</div>
+											</button>
+										</li>
+									))
+								)}
+							</ul>
+						</div>
+					)}
+				</div>
+
+				<div className="mt-2 text-sm text-gray-500 shrink-0">Total: {totalSizeMB.toFixed(2)} MB</div>
 			</div>
 
 			{/* Warning banner when 2 or more files are queued */}
@@ -85,7 +199,6 @@ export function UploadPanel() {
 						<div className="flex-1">
 							<div className="text-sm">{u.file.name}</div>
 							<div className="text-xs text-gray-500">
-								{/* TODO: Create seperate component for upload item details */}
 								Size: {(u.file.size / (1024 * 1024)).toFixed(2)} MB &#8226; Status: {u.status}{' '}
 								{typeof u.progress === 'number' && `(${u.progress}%)`}
 								{u.error && <span className="text-red-500 ml-2">{u.error}</span>}

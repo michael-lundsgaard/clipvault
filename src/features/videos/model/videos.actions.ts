@@ -1,15 +1,17 @@
 'use server';
 
-import { insertVideo, listVideos, markVideoCompleted } from '@/entities/video/model/video.db';
+import { insertVideo, listVideosWithRelations, markVideoCompleted } from '@/entities/video/model/video.db';
 import { presignVideoUpload } from '@/entities/video/model/video.storage';
 import { nanoid } from 'nanoid';
+
+const ANONYMOUS_USER_ID = 'anonymous';
 
 type CreateVideoInitArgs = {
 	filename: string;
 	sizeBytes: number;
 	mimeType?: string;
-	uploadedBy?: string;
-	category?: string;
+	uploadedBy?: string; // optional until auth is implemented
+	categoryId?: string;
 };
 
 export type CreateVideoInitResult = {
@@ -19,7 +21,7 @@ export type CreateVideoInitResult = {
 };
 
 export async function createVideoInitAction(args: CreateVideoInitArgs): Promise<CreateVideoInitResult> {
-	const { filename, sizeBytes, mimeType = 'video/mp4', uploadedBy, category } = args;
+	const { filename, sizeBytes, mimeType = 'video/mp4', uploadedBy, categoryId } = args;
 
 	const id = nanoid(11);
 	const storageKey = `${id}.mp4`;
@@ -32,8 +34,8 @@ export async function createVideoInitAction(args: CreateVideoInitArgs): Promise<
 		storageKey,
 		sizeBytes,
 		durationSeconds: 0,
-		uploadedBy,
-		category,
+		uploadedBy: uploadedBy ?? ANONYMOUS_USER_ID,
+		categoryId,
 		status: 'pending',
 	});
 
@@ -56,5 +58,5 @@ export async function confirmUploadAction(
 }
 
 export async function listVideosAction() {
-	return listVideos();
+	return listVideosWithRelations();
 }

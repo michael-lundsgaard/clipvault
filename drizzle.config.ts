@@ -4,7 +4,7 @@ dotenv.config();
 import { Config } from 'drizzle-kit';
 
 export default {
-	schema: './src/lib/db/schema.ts',
+	schema: './src/shared/lib/db/schema.ts',
 	out: './db-migrations',
 	dialect: 'turso',
 	dbCredentials: {

@@ -1,10 +1,10 @@
 'use client';
 
-import type { Video } from '@/entities/video/model/video.db';
+import { VideoWithRelations } from '@/entities/video/model/video.types';
 import { memo } from 'react';
 
 interface VideoPlayerProps {
-	video: Video;
+	video: VideoWithRelations;
 	url: string;
 }
 
@@ -18,14 +18,14 @@ function VideoPlayer({ video, url }: VideoPlayerProps) {
 						<div>Size: {(video.sizeBytes / 1024 / 1024).toFixed(2)} MB</div>
 						{video.durationSeconds > 0 && <div>Duration: {Math.round(video.durationSeconds)}s</div>}
 						{video.category && (
-							<div className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-xs">{video.category}</div>
+							<div className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-xs">{video.category.name}</div>
 						)}
 						<div className="ml-auto text-xs text-gray-400">Stream</div>
 					</div>
 				</div>
 
 				<div className="p-6 bg-gray-900 flex justify-center">
-					<video controls src={url} preload="metadata" className="w-full max-h-[60vh] bg-black rounded-md" />
+					<video controls src={url} preload="none" className="w-full max-h-[60vh] bg-black rounded-md" />
 				</div>
 
 				<div className="px-6 py-4 text-sm text-gray-600 flex items-center gap-4">

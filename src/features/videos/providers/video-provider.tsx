@@ -1,6 +1,6 @@
 'use client';
 
-import { Video } from '@/entities/video/model/video.db';
+import { VideoWithRelations } from '@/entities/video/model/video.types';
 import { nanoid } from 'nanoid';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { confirmUploadAction, createVideoInitAction, listVideosAction } from '../model/videos.actions';
@@ -15,16 +15,21 @@ export interface UploadItem {
 	error?: string;
 }
 
+interface VideoMetadata {
+	uploadedBy?: string;
+	categoryId?: string;
+}
+
 interface VideoContextType {
-	videos: Video[];
+	videos: VideoWithRelations[];
 	videosLoading: boolean;
 	videosError: string | null;
 	refreshVideos: () => void;
 
 	uploads: UploadItem[];
 	addFiles: (files: FileList) => void;
-	startUpload: (id: string, metadata?: { uploadedBy?: string; category?: string }) => void;
-	uploadAll: (metadata?: { uploadedBy?: string; category?: string }) => void;
+	startUpload: (id: string, metadata?: VideoMetadata) => void;
+	uploadAll: (metadata?: VideoMetadata) => void;
 	removeUpload: (id: string) => void;
 }
 
@@ -61,7 +66,7 @@ interface VideoProviderProps {
 }
 
 export function VideoProvider({ children }: VideoProviderProps) {
-	const [videos, setVideos] = useState<Video[]>([]);
+	const [videos, setVideos] = useState<VideoWithRelations[]>([]);
 	const [videosLoading, setVideosLoading] = useState(true);
 	const [videosError, setVideosError] = useState<string | null>(null);
 	const [uploads, setUploads] = useState<UploadItem[]>([]);
@@ -100,7 +105,7 @@ export function VideoProvider({ children }: VideoProviderProps) {
 	}, []);
 
 	const startUpload = useCallback(
-		async (id: string, metadata: { uploadedBy?: string; category?: string } = {}) => {
+		async (id: string, metadata: VideoMetadata = {}) => {
 			setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, status: 'uploading', progress: 0 } : u)));
 			const item = uploads.find((u) => u.id === id);
 			if (!item) {
@@ -113,7 +118,7 @@ export function VideoProvider({ children }: VideoProviderProps) {
 					filename: item.file.name,
 					sizeBytes: item.file.size,
 					uploadedBy: metadata.uploadedBy ?? 'anonymous',
-					category: metadata.category,
+					categoryId: metadata.categoryId,
 				});
 
 				const uploadUrl = initRes.uploadUrl;
@@ -139,7 +144,7 @@ export function VideoProvider({ children }: VideoProviderProps) {
 	);
 
 	const uploadAll = useCallback(
-		(metadata?: { uploadedBy?: string; category?: string }) => {
+		(metadata?: VideoMetadata) => {
 			uploads.forEach((u) => {
 				if (u.status === 'pending') startUpload(u.id, metadata);
 			});
