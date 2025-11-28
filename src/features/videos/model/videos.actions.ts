@@ -1,6 +1,12 @@
 'use server';
 
-import { insertVideo, listVideosWithRelations, markVideoCompleted } from '@/entities/video/model/video.db';
+import { listCategories } from '@/entities/category/model/category.db';
+import {
+	getVideoCategoryCounts,
+	insertVideo,
+	listVideosWithRelations,
+	markVideoCompleted,
+} from '@/entities/video/model/video.db';
 import { presignVideoUpload } from '@/entities/video/model/video.storage';
 import { nanoid } from 'nanoid';
 
@@ -57,6 +63,14 @@ export async function confirmUploadAction(
 	});
 }
 
-export async function listVideosAction() {
-	return listVideosWithRelations();
+export async function listVideosAction(options?: { categoryId?: string | null; uploadedBy?: string | null }) {
+	return listVideosWithRelations({
+		categoryId: options?.categoryId,
+		uploadedBy: options?.uploadedBy,
+	});
+}
+
+export async function listCategoryFiltersAction() {
+	const [categories, counts] = await Promise.all([listCategories(), getVideoCategoryCounts()]);
+	return { categories, counts };
 }

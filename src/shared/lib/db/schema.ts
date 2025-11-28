@@ -52,11 +52,11 @@ export const videos = sqliteTable(
 		sizeBytes: integer('size_bytes').notNull(),
 		durationSeconds: integer('duration_seconds').notNull(),
 
-		// FK to categories.id (game title). Optional.
-		categoryId: text('category_id'),
+		// FK to categories.id (game title).
+		categoryId: text('category_id').notNull(),
 
-		// FK to users.id (uploader/owner) Optional – until authentication is enforced.
-		uploadedBy: text('uploaded_by'),
+		// FK to users.id (uploader/owner)
+		uploadedBy: text('uploaded_by').notNull(),
 
 		compressed: integer('compressed', { mode: 'boolean' }).notNull().default(false),
 		thumbnailUrl: text('thumbnail_url'),

@@ -1,21 +1,16 @@
 import { db, videos } from '@/shared/lib/db';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import type { NewVideoRow, VideoWithRelations } from './video.types';
 
 export async function insertVideo(video: NewVideoRow) {
 	return db.insert(videos).values(video).returning();
 }
 
-export async function listVideos(options?: {
-	categoryId?: string | null;
-	uploadedBy?: string | null;
-	compressed?: boolean;
-}) {
+export async function listVideos(options?: { categoryId?: string | null; uploadedBy?: string | null }) {
 	const filters = [];
 
 	if (typeof options?.categoryId === 'string') filters.push(eq(videos.categoryId, options.categoryId));
 	if (typeof options?.uploadedBy === 'string') filters.push(eq(videos.uploadedBy, options.uploadedBy));
-	if (typeof options?.compressed === 'boolean') filters.push(eq(videos.compressed, options.compressed));
 
 	const conditions = filters.length ? and(...filters) : undefined;
 
@@ -25,13 +20,11 @@ export async function listVideos(options?: {
 export async function listVideosWithRelations(options?: {
 	categoryId?: string | null;
 	uploadedBy?: string | null;
-	compressed?: boolean;
 }): Promise<VideoWithRelations[]> {
 	const filters = [];
 
 	if (typeof options?.categoryId === 'string') filters.push(eq(videos.categoryId, options.categoryId));
 	if (typeof options?.uploadedBy === 'string') filters.push(eq(videos.uploadedBy, options.uploadedBy));
-	if (typeof options?.compressed === 'boolean') filters.push(eq(videos.compressed, options.compressed));
 
 	const conditions = filters.length ? and(...filters) : undefined;
 
@@ -79,4 +72,14 @@ export async function markVideoCompleted(
 			sizeBytes: updates?.sizeBytes,
 		})
 		.where(eq(videos.id, id));
+}
+
+export async function getVideoCategoryCounts() {
+	return db
+		.select({
+			categoryId: videos.categoryId,
+			count: sql<number>`count(*)`.as('count'),
+		})
+		.from(videos)
+		.groupBy(videos.categoryId);
 }

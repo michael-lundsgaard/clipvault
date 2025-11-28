@@ -7,6 +7,6 @@ export type UserRow = typeof users.$inferSelect;
 export type CategoryRow = typeof categories.$inferSelect;
 
 export interface VideoWithRelations extends VideoRow {
-	uploader?: UserRow | null;
-	category?: CategoryRow | null;
+	uploader: UserRow;
+	category: CategoryRow;
 }

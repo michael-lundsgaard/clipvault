@@ -5,6 +5,7 @@ import { UploadProvider } from '../providers/upload-provider';
 import { VideoProvider } from '../providers/video-provider';
 import { UploadPanel } from './upload-panel';
 import { VideoList } from './video-list';
+import VideoRefinementBar from './video-refinement-bar';
 
 export function VideosPage() {
 	const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -39,6 +40,8 @@ export function VideosPage() {
 				<UploadProvider>
 					<UploadPanel />
 				</UploadProvider>
+
+				<VideoRefinementBar />
 				<VideoList viewMode={viewMode} />
 			</div>
 		</VideoProvider>

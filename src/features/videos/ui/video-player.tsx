@@ -17,9 +17,7 @@ function VideoPlayer({ video, url }: VideoPlayerProps) {
 					<div className="mt-2 flex items-center gap-3 text-sm text-gray-500">
 						<div>Size: {(video.sizeBytes / 1024 / 1024).toFixed(2)} MB</div>
 						{video.durationSeconds > 0 && <div>Duration: {Math.round(video.durationSeconds)}s</div>}
-						{video.category && (
-							<div className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-xs">{video.category.name}</div>
-						)}
+						<div className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-xs">{video.category.name}</div>
 						<div className="ml-auto text-xs text-gray-400">Stream</div>
 					</div>
 				</div>

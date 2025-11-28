@@ -52,6 +52,8 @@ export function UploadPanel() {
 		return bytes / (1024 * 1024);
 	}, [uploads]);
 
+	const canUpload = selectedCategoryId !== undefined && uploads.length > 0;
+
 	return (
 		<div className="space-y-3">
 			{/* drag & drop / click zone */}
@@ -90,9 +92,13 @@ export function UploadPanel() {
 
 					<button
 						type="button"
-						className="ml-2 px-3 py-1 rounded bg-blue-600 text-white text-sm"
+						className={`ml-2 px-3 py-1 rounded text-sm ${
+							canUpload ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+						}`}
+						disabled={!canUpload}
 						onClick={(e) => {
 							e.stopPropagation();
+							if (!canUpload) return;
 							uploadAll({ categoryId: selectedCategoryId });
 						}}
 					>
@@ -138,21 +144,6 @@ export function UploadPanel() {
 							</div>
 
 							<ul className="text-sm">
-								<li>
-									<button
-										type="button"
-										className={`w-full text-left px-3 py-2 hover:bg-gray-50 ${
-											!selectedCategoryId ? 'bg-gray-50 font-medium' : ''
-										}`}
-										onClick={() => {
-											setSelectedCategoryId(undefined);
-											setCategoryOpen(false);
-										}}
-									>
-										Uncategorized
-									</button>
-								</li>
-
 								{filteredCategories.length === 0 ? (
 									<li className="px-3 py-2 text-xs text-gray-500">No matches</li>
 								) : (

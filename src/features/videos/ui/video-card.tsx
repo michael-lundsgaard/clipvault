@@ -52,7 +52,7 @@ export default function VideoCard({ video }: { video: VideoWithRelations }) {
 						{/* category */}
 						<div>
 							<span className="ml-1 text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">
-								{video.category?.name ?? 'Uncategorized'}
+								{video.category.name}
 							</span>
 						</div>
 					</div>
