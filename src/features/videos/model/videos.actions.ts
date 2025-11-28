@@ -2,6 +2,7 @@
 
 import { insertVideo, listVideos, markVideoCompleted } from '@/entities/video/model/video.db';
 import { presignVideoUpload } from '@/entities/video/model/video.storage';
+import { nanoid } from 'nanoid';
 
 type CreateVideoInitArgs = {
 	filename: string;
@@ -13,22 +14,22 @@ type CreateVideoInitArgs = {
 
 export type CreateVideoInitResult = {
 	id: string;
-	storedFilename: string;
+	storageKey: string;
 	uploadUrl: string;
 };
 
 export async function createVideoInitAction(args: CreateVideoInitArgs): Promise<CreateVideoInitResult> {
 	const { filename, sizeBytes, mimeType = 'video/mp4', uploadedBy, category } = args;
 
-	const id = crypto.randomUUID();
-	const storedFilename = `${id}-${filename}`;
+	const id = nanoid(11);
+	const storageKey = `${id}.mp4`;
 
-	const uploadUrl = await presignVideoUpload(storedFilename, mimeType, 3600);
+	const uploadUrl = await presignVideoUpload(storageKey, mimeType);
 
 	await insertVideo({
 		id,
 		originalFilename: filename,
-		storedFilename,
+		storageKey,
 		sizeBytes,
 		durationSeconds: 0,
 		uploadedBy,
@@ -38,7 +39,7 @@ export async function createVideoInitAction(args: CreateVideoInitArgs): Promise<
 
 	return {
 		id,
-		storedFilename,
+		storageKey,
 		uploadUrl,
 	};
 }

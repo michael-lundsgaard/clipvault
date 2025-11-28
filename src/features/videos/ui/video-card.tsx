@@ -20,9 +20,6 @@ export default function VideoCard({ video }: { video: Video }) {
 					<div className="absolute inset-0 bg-linear-to-br from-gray-200 to-gray-100 flex items-center justify-center">
 						{/* placeholder thumbnail */}
 						<div className="flex flex-col items-center text-gray-400">
-							<svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-								<path d="M3 22v-20l18 10-18 10z" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-							</svg>
 							<div className="text-xs mt-1">Preview</div>
 						</div>
 

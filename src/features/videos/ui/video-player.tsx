@@ -25,7 +25,7 @@ function VideoPlayer({ video, url }: VideoPlayerProps) {
 				</div>
 
 				<div className="p-6 bg-gray-900 flex justify-center">
-					<video controls src={url} className="w-full max-h-[60vh] bg-black rounded-md" />
+					<video controls src={url} preload="metadata" className="w-full max-h-[60vh] bg-black rounded-md" />
 				</div>
 
 				<div className="px-6 py-4 text-sm text-gray-600 flex items-center gap-4">

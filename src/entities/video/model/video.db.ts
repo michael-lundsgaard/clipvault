@@ -38,8 +38,8 @@ export async function markVideoCompleted(
 		.set({
 			status: 'ready',
 			completedAt: updates?.completedAt ?? new Date(),
-			...(typeof updates?.durationSeconds === 'number' ? { durationSeconds: updates.durationSeconds } : {}),
-			...(typeof updates?.sizeBytes === 'number' ? { sizeBytes: updates.sizeBytes } : {}),
+			durationSeconds: updates?.durationSeconds,
+			sizeBytes: updates?.sizeBytes,
 		})
 		.where(eq(videos.id, id));
 }

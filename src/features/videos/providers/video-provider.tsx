@@ -1,10 +1,9 @@
 'use client';
 
 import { Video } from '@/entities/video/model/video.db';
-// import { Video } from '@/entities/video/modal/video.db';
+import { nanoid } from 'nanoid';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
-import { createVideoInitAction, listVideosAction } from '../model/videos.actions';
-// import { createVideoInitAction, listVideosAction } from '../models/videos.actions';
+import { confirmUploadAction, createVideoInitAction, listVideosAction } from '../model/videos.actions';
 
 export type UploadStatus = 'pending' | 'uploading' | 'completed' | 'error';
 
@@ -14,7 +13,6 @@ export interface UploadItem {
 	status: UploadStatus;
 	progress?: number;
 	error?: string;
-	videoId?: string;
 }
 
 interface VideoContextType {
@@ -93,7 +91,7 @@ export function VideoProvider({ children }: VideoProviderProps) {
 		const items: UploadItem[] = Array.from(files)
 			.filter((f) => f.type === 'video/mp4')
 			.map((file) => ({
-				id: crypto.randomUUID(),
+				id: nanoid(11),
 				file,
 				status: 'pending',
 				progress: 0,
@@ -127,9 +125,9 @@ export function VideoProvider({ children }: VideoProviderProps) {
 
 				if (!result.ok) throw new Error(`Upload failed: ${result.status}`);
 
-				setUploads((prev) =>
-					prev.map((u) => (u.id === id ? { ...u, status: 'completed', progress: 100, videoId: initRes.id } : u))
-				);
+				await confirmUploadAction(initRes.id);
+
+				setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, status: 'completed', progress: 100 } : u)));
 
 				refreshVideos();
 			} catch (err) {
