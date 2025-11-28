@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { UploadProvider } from '../providers/upload-provider';
 import { VideoProvider } from '../providers/video-provider';
 import { UploadPanel } from './upload-panel';
 import { VideoList } from './video-list';
@@ -35,8 +36,9 @@ export function VideosPage() {
 						List
 					</button>
 				</div>
-
-				<UploadPanel />
+				<UploadProvider>
+					<UploadPanel />
+				</UploadProvider>
 				<VideoList viewMode={viewMode} />
 			</div>
 		</VideoProvider>

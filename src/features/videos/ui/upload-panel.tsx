@@ -2,10 +2,10 @@
 
 import { useCategories } from '@/features/categories/model/use-categories';
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { useVideo } from '../providers/video-provider';
+import { useUpload } from '../providers/upload-provider';
 
 export function UploadPanel() {
-	const { uploads, addFiles, uploadAll, removeUpload } = useVideo();
+	const { uploads, addFiles, uploadAll, removeUpload } = useUpload();
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 
 	const { categories } = useCategories();
