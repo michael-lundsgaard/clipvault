@@ -16,14 +16,14 @@ export interface UploadItem {
 
 interface VideoMetadata {
 	uploadedBy?: string;
-	categoryId?: string;
+	categoryId: string;
 }
 
 interface UploadContextType {
 	uploads: UploadItem[];
 	addFiles: (files: FileList) => void;
-	startUpload: (id: string, metadata?: VideoMetadata) => void;
-	uploadAll: (metadata?: VideoMetadata) => void;
+	startUpload: (id: string, metadata: VideoMetadata) => void;
+	uploadAll: (metadata: VideoMetadata) => void;
 	removeUpload: (id: string) => void;
 }
 
@@ -72,7 +72,7 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
 	}, []);
 
 	const startUpload = useCallback(
-		async (id: string, metadata: VideoMetadata = {}) => {
+		async (id: string, metadata: VideoMetadata) => {
 			setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, status: 'uploading', progress: 0 } : u)));
 			const item = uploads.find((u) => u.id === id);
 			if (!item) {
@@ -84,7 +84,7 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
 				const initRes = await createVideoInitAction({
 					filename: item.file.name,
 					sizeBytes: item.file.size,
-					uploadedBy: metadata.uploadedBy ?? 'anonymous',
+					uploadedBy: metadata.uploadedBy,
 					categoryId: metadata.categoryId,
 				});
 
@@ -111,7 +111,7 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
 	);
 
 	const uploadAll = useCallback(
-		(metadata?: VideoMetadata) => {
+		(metadata: VideoMetadata) => {
 			uploads.forEach((u) => {
 				if (u.status === 'pending') startUpload(u.id, metadata);
 			});

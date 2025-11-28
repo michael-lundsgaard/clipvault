@@ -15,9 +15,8 @@ const ANONYMOUS_USER_ID = 'anonymous';
 type CreateVideoInitArgs = {
 	filename: string;
 	sizeBytes: number;
-	mimeType?: string;
 	uploadedBy?: string; // optional until auth is implemented
-	categoryId?: string;
+	categoryId: string;
 };
 
 export type CreateVideoInitResult = {
@@ -27,12 +26,12 @@ export type CreateVideoInitResult = {
 };
 
 export async function createVideoInitAction(args: CreateVideoInitArgs): Promise<CreateVideoInitResult> {
-	const { filename, sizeBytes, mimeType = 'video/mp4', uploadedBy, categoryId } = args;
+	const { filename, sizeBytes, uploadedBy, categoryId } = args;
 
 	const id = nanoid(11);
 	const storageKey = `${id}.mp4`;
 
-	const uploadUrl = await presignVideoUpload(storageKey, mimeType);
+	const uploadUrl = await presignVideoUpload(storageKey);
 
 	await insertVideo({
 		id,
